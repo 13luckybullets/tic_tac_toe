@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>5 in lin!e</title>
+    <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
+    <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap-theme.min.css">
+</head>
+<body background="{{ url_for('static', filename='background.png') }}">
+    <h4>5 in line! move: {{ data.moves }} chords: {{ data.chord }}</h4>
+    <div><button type="button" onclick="window.location.href='{{ url_for('page') }}';">Refresh</button>
+          <div>
+                <p>{% for line in range(20) %}
+                    <p>{% for point in data.field[line] %}
+                            {% if point == data.x %}
+                                <span>
+                                    <img src="{{ url_for('static', filename='x.png') }}" width='30px' height='15px'/></span>
+                                {% elif point == data.o %}
+                                    <span>
+                                    <img src="{{ url_for('static', filename='o.png') }}" width='30px' height='15px'/></span>
+                                {% else %}
+                                    <span><a href="{{ url_for('game', move=data.moves, line=line, point=loop.index0)}}">
+                                    <img src="{{ url_for('static', filename='main.png')  }}" width='30px' height='15px'/></a>
+                                    </span>
+                            {% endif %}
+                        {% endfor %}</p>
+                  {% endfor %}</p>
+            </div>
+    </div>
+</body>
+</html>
+
