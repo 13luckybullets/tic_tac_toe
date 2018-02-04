@@ -2,6 +2,7 @@ from app import app
 from flask import render_template, request, redirect, url_for, flash
 from flask import g
 from engine import *
+from models import *
 
 FIELD = []
 DATA = {"empty": '.', 'x': 'x', 'o': 'o', "moves": 0, "player": '.'}
@@ -17,12 +18,17 @@ def page():
         global FIELD
         FIELD = get_field(NUM)
         field = FIELD
-        return render_template("game.html", field=field, data=DATA)
+        new_game = Game(field_size=NUM)
+        db.session.add(new_game)
+        db.session.commit()
+        return render_template("game.html", field=field, data=DATA, pk=new_game.id, num=num)
     return render_template('first_page.html')
 
 
-@app.route("/game/<move>/<line>:<point>")
-def game(move, line, point):
+@app.route("/game<pk>/<move>/<line>:<point>")
+def game(pk, move, line, point):
+    game_playing = Game.query.filter(Game.id == pk)
+
     if move == 0:
         field = getattr(g, 'field', None)
     else:
@@ -37,14 +43,33 @@ def game(move, line, point):
 
     data['chord'] = f"{line}:{point}"
     field = update_field(field, int(move), int(line), int(point))
+    log = GameLog(parent=pk, move=int(data['moves']), line=int(line), point=int(point))
+    db.session.add(log)
+    db.session.commit()
+
     if check_winner(field):
+        game_playing.winner = data['player']
+        db.session.commit()
+
         flash(f"Переможець {data['player']}, на {data['moves']} ході")
-    return render_template('game.html', field=field, data=DATA)
+    return render_template('game.html', field=field, data=DATA, pk=pk)
 
 
 @app.route("/history/")
 def history():
-    return render_template("history.html")
+    games = Game.query.all()
+    return render_template("history.html", games=games)
+
+
+@app.route("/review/<pk>")
+def review(pk):
+    data = DATA
+    log = GameLog.query.filter(GameLog.parent == pk)
+    view_game = Game.query.filter(Game.id == pk).first()
+    field = get_field(view_game.field_size)
+
+
+    return render_template("review.html", log=log, game=view_game, data=data, field=field)
 
 
 @app.route("/refresh/")
@@ -63,18 +88,4 @@ def before_request():
 
 
 
-
-
-    # data = {"field": get_field(int(num)), "num": int(num),
-    #         "chord": "0", "empty": '.', 'x': 'x', 'o': 'o', "moves": 1}
-
-    #
-    # num = request.args.get("num")
-    # if num:
-    #     data = Game(field_num=num, field=get_field(int(num)))
-    #     db.session.add(data)
-    #     db.session.commit()
-    #
-    #     return render_template('game.html', data=data)
-    # return render_template('first_page.html')
 

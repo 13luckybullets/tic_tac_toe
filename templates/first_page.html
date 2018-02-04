@@ -5,6 +5,7 @@
         <input type="text" size="40" placeholder="вкажіть розмір поля(від 5 до 20 бажано :))" name="num" value="{{ request.args.get('num', '') }}">
             <span>
                 <button type="submit">GO!)</button>
+                <button type="button" onclick="window.location.href='{{ url_for('history') }}';">Історія</button>
             </span>
     </form></center>
 {% endblock %}

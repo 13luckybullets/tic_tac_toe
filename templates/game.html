@@ -20,14 +20,14 @@
                       <span>mr "x" move first!</span>
                         <button type="button" onclick="window.location.href='{{ url_for('game', move=data.moves, line=0, point=0) }}';">go!</button>
                       {% else %}
-                      <p>{% for line in range(20) %}
+                      <p>{% for line in range(100) %}
                         <p>{% for point in field[line] %}
                                 {% if point == data.x %}
                                     <span><img src="{{ url_for('static', filename='img/x.png') }}" width='30px' height='15px'/></span>
                                     {% elif point == data.o %}
                                         <span><img src="{{ url_for('static', filename='img/o.png') }}" width='30px' height='15px'/></span>
                                     {% else %}
-                                        <span><a href="{{ url_for('game', move=data.moves, line=line, point=loop.index0)}}">
+                                        <span><a href="{{ url_for('game', pk=pk, move=data.moves, line=line, point=loop.index0)}}">
                                         <img src="{{ url_for('static', filename='img/main.png')  }}" width='30px' height='15px'/></a>
                                         </span>
                                 {% endif %}
