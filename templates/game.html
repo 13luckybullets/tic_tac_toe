@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+{% block content %}
+    <div><center>
+
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                <ul class=flashes>
+                    {% for message in messages %}
+                      <li>{{ message }}</li>
+                        <button type="button" onclick="window.location.href='{{ url_for('refresh') }}';">Ще!</button>
+                        <button type="button" onclick="window.location.href='{{ url_for('history') }}';">Історія</button>
+                    {% endfor %}
+                </ul>
+            {% else %}
+             <h4> Хід: {{data.moves}}, гравця: {{data.player }}, кординати:{{ data.chord }} </h4>
+                <div><button type="button" onclick="window.location.href='{{ url_for('refresh') }}';">З початку</button>
+                     <button type="button" onclick="window.location.href='{{ url_for('history') }}';">Історія</button>
+                    <div>
+                      {% if not field  %}
+                      <span>mr "x" move first!</span>
+                        <button type="button" onclick="window.location.href='{{ url_for('game', move=data.moves, line=0, point=0) }}';">go!</button>
+                      {% else %}
+                      <p>{% for line in range(20) %}
+                        <p>{% for point in field[line] %}
+                                {% if point == data.x %}
+                                    <span><img src="{{ url_for('static', filename='img/x.png') }}" width='30px' height='15px'/></span>
+                                    {% elif point == data.o %}
+                                        <span><img src="{{ url_for('static', filename='img/o.png') }}" width='30px' height='15px'/></span>
+                                    {% else %}
+                                        <span><a href="{{ url_for('game', move=data.moves, line=line, point=loop.index0)}}">
+                                        <img src="{{ url_for('static', filename='img/main.png')  }}" width='30px' height='15px'/></a>
+                                        </span>
+                                {% endif %}
+                            {% endfor %}</p>
+                        {% endfor %}</p>
+                      {% endif %}
+                </div>
+        </div>
+
+            {% endif %}
+        {% endwith %}</center>
+
+
+{% endblock %}

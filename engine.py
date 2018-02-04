@@ -1,7 +1,7 @@
 
 
-def get_field():
-    field_output = [['.' for i in range(20)] for j in range(20)]
+def get_field(num):
+    field_output = [['.' for i in range(num)] for j in range(num)]
     return field_output
 
 
@@ -23,21 +23,15 @@ def check_winner(field):
                 if counter == 5:
                     return True
 
-    def check_cascade(check_field):
-        work_lst = []
-        first = 0
-        second = 5
-        while first != 16:
-            matrx = check_field[first:second]
-            for i in range(5):
-                matrx[i] = matrx[i][i:]
-                work_lst.append(matrx[i])
-            first += 1
-            second += 1
-
-        for j in tuple(zip(*work_lst[::-1])):
-            if check_line('x', j) or check_line('o', j):
-                return True
+    def check_cascade(field, point):
+        try:
+            for i in range(len(field)):
+                for j in range(len(field)):
+                    if field[i][j] == point and field[i + 1][j + 1] == point and field[i + 2][j + 2] == point \
+                            and field[i + 3][j + 3] == point and field[i + 4][j + 4] == point:
+                        return True
+        except IndexError:
+            pass
 
     # check winner in horizontal line
     for i in field:
@@ -45,35 +39,32 @@ def check_winner(field):
             return True
 
     # check winner in vertical line
-    for j in tuple(zip(*field[::-1])): #?????????????????????????????????????????????????
+    for j in zip(*field[::-1]):
         if check_line('x', j) or check_line('o', j):
             return True
 
-    # check winner in cascade line
-    if check_cascade(field) or check_cascade(field[::-1]):
+    if check_cascade(field, "x") or check_cascade(field[::-1], "x") \
+            or check_cascade(field, "o") or check_cascade(field[::-1], "o"):
         return True
 
     return False
 
 
 
-
-
-# a = get_field()
+# a = get_field(20)
 # work = update_field(a, 1, 0, 0)
 # work = update_field(a, 3, 1, 1)
 # work = update_field(a, 3, 2, 2)
 # work = update_field(a, 3, 3, 3)
 # work = update_field(a, 3, 4, 4)
 #
-#
 # print(check_winner(work))
 
-# a = get_field()
+# a = get_field(20)
 # work = update_field(a, 1, 14, 14)
 # work = update_field(a, 1, 15, 15)
 # work = update_field(a, 3, 16, 16)
 # work = update_field(a, 3, 17, 17)
-#
+# work = update_field(a, 3, 18, 18)
 #
 # print(check_winner(work))
