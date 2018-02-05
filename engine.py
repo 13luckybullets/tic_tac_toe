@@ -1,5 +1,3 @@
-
-
 def get_field(num):
     field_output = [['.' for i in range(num)] for j in range(num)]
     return field_output
@@ -7,9 +5,9 @@ def get_field(num):
 
 def update_field(field, move, line, point):
     if move % 2 == 0:
-        field[line][point] = 'o'
-    else:
         field[line][point] = 'x'
+    else:
+        field[line][point] = 'o'
     return field
 
 
@@ -49,22 +47,3 @@ def check_winner(field):
 
     return False
 
-
-
-# a = get_field(20)
-# work = update_field(a, 1, 0, 0)
-# work = update_field(a, 3, 1, 1)
-# work = update_field(a, 3, 2, 2)
-# work = update_field(a, 3, 3, 3)
-# work = update_field(a, 3, 4, 4)
-#
-# print(check_winner(work))
-
-# a = get_field(20)
-# work = update_field(a, 1, 14, 14)
-# work = update_field(a, 1, 15, 15)
-# work = update_field(a, 3, 16, 16)
-# work = update_field(a, 3, 17, 17)
-# work = update_field(a, 3, 18, 18)
-#
-# print(check_winner(work))

@@ -9,7 +9,6 @@ class Game(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     field_size = db.Column(db.Integer)
     date = db.Column(db.DateTime, default=datetime.now())
-    winner = db.Column(db.String(140))
     child = relationship("GameLog",  backref="Game")
 
     def __init__(self, *args, **kwargs):

@@ -1,11 +1,11 @@
 from app import app
-from flask import render_template, request, redirect, url_for, flash
-from flask import g
+from flask import render_template, request, redirect, url_for, flash, g
 from engine import *
 from models import *
 
+
+DATA = {"x": "x", "o": "o", "moves": 0}
 FIELD = []
-DATA = {"empty": '.', 'x': 'x', 'o': 'o', "moves": 0, "player": '.'}
 NUM = 0
 
 
@@ -27,58 +27,91 @@ def page():
 
 @app.route("/game<pk>/<move>/<line>:<point>")
 def game(pk, move, line, point):
-    game_playing = Game.query.filter(Game.id == pk)
 
     if move == 0:
         field = getattr(g, 'field', None)
     else:
         field = FIELD
+
     data = DATA
-    data['moves'] = int(move) + 1
 
     if data['moves'] % 2 == 0:
-        data['player'] = "пан '0' "
-    else:
         data['player'] = "пан 'X' "
+    else:
+        data['player'] = "пан '0' "
 
-    data['chord'] = f"{line}:{point}"
+
     field = update_field(field, int(move), int(line), int(point))
     log = GameLog(parent=pk, move=int(data['moves']), line=int(line), point=int(point))
     db.session.add(log)
-    db.session.commit()
 
     if check_winner(field):
-        game_playing.winner = data['player']
-        db.session.commit()
-
+        set_null()
         flash(f"Переможець {data['player']}, на {data['moves']} ході")
+
+    data['moves'] = int(move) + 1
+    db.session.commit()
     return render_template('game.html', field=field, data=DATA, pk=pk)
 
 
 @app.route("/history/")
 def history():
-    games = Game.query.all()
-    return render_template("history.html", games=games)
+    games = Game.query.order_by(Game.date.desc())
+    page_num = request.args.get('page_num')
+
+    if page_num and page_num.isdigit:
+        page_num = int(page_num)
+    else:
+        page_num = 1
+
+    pages = games.paginate(page=page_num, per_page=10)
+
+    return render_template("history.html", games=games, pages=pages)
 
 
-@app.route("/review/<pk>")
+@app.route("/review/<pk>/")
+def draw_map(pk):
+    view_game = Game.query.filter(Game.id == pk).first()
+    global FIELD
+    FIELD = get_field(view_game.field_size)
+    return render_template("review.html", game=view_game, data=DATA, field=FIELD)
+
+
+@app.route("/review/<pk>/next_move")
 def review(pk):
+
     data = DATA
     log = GameLog.query.filter(GameLog.parent == pk)
     view_game = Game.query.filter(Game.id == pk).first()
-    field = get_field(view_game.field_size)
+    log_list = [{'move': i.move, "point": i.point, "line": i.line} for i in log]
 
+    if data['moves'] % 2 == 0:
+        data['player'] = "пан 'X' "
+    else:
+        data['player'] = "пан '0' "
 
-    return render_template("review.html", log=log, game=view_game, data=data, field=field)
+    try:
+        data['chord'] = f"{log_list[data['moves']]['line']+1}:{log_list[data['moves']]['point']+1}"
+        global FIELD
+        FIELD = update_field(FIELD, log_list[data['moves']]['move'], log_list[data['moves']]['line'],
+                             log_list[data['moves']]['point'])
+
+        if check_winner(FIELD):
+            flash(f"Переможець {data['player']}, на {data['moves']} ході")
+            set_null()
+
+    except IndexError:
+        flash(f"Гра була не закінчена")
+        set_null()
+    data['moves'] += 1
+
+    return render_template("review.html", log=log, game=view_game, data=data, field=FIELD)
 
 
 @app.route("/refresh/")
 def refresh():
-    global NUM, DATA
-    NUM = 0
-    field = g.field
-    DATA = {"empty": '.', 'x': 'x', 'o': 'o', "moves": 0}
-    return redirect(url_for('page', field=field))
+    set_null()
+    return redirect(url_for('page', field=FIELD))
 
 
 @app.before_request
@@ -86,6 +119,10 @@ def before_request():
     g.field = get_field(NUM)
 
 
+def set_null():
+    global NUM, DATA
+    NUM = 0
+    DATA = {"empty": '.', 'x': 'x', 'o': 'o', "moves": 0}
 
 
 
