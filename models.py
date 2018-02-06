@@ -3,6 +3,9 @@ from datetime import datetime
 from sqlalchemy.orm import relationship
 
 
+# creating tables in database
+
+
 class Game(db.Model):
     __tablename__ = 'Game'
 

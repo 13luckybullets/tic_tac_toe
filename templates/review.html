@@ -5,7 +5,7 @@
             {% if messages %}
                 <ul class=flashes>
                     {% for message in messages %}
-                      <h4>{{ message }}</h4>
+                      <h4>{{ message }} Хід: {{ data.chord }}</h4>
                         <p><button type="button" onclick="window.location.href='{{ url_for('refresh') }}';">На головну</button>
                         <button type="button" onclick="window.location.href='{{ url_for('history') }}';">Історія</button></p>
                     {% endfor %}
@@ -18,7 +18,7 @@
                   <p>{% for line in range(100) %}
                     <p>{% for point in field[line] %}
                             {% if point == data.x %}
-                                <span><img src="{{ url_for('static', filename='img/x.png') }}" width='30px' height='30px'/></span>
+                                <span><img src="{{ url_for('static', filename='img/x.jpg') }}" width='30px' height='30px'/></span>
                             {% elif point == data.o %}
                                 <span><img src="{{ url_for('static', filename='img/o.png') }}" width='30px' height='30px'/></span>
                             {% else %}

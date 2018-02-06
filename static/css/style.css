@@ -1,0 +1,35 @@
+h1, h2, h3, h4, p, span, li {
+    font-family: "Rockwell Extra Bold", "Rockwell Bold", monospace;
+    color: #CC9933;
+}
+
+input[type="text"] {
+width: 410px;
+}
+
+button {
+   background: #663300;
+   padding: 3px 7px;
+   -moz-border-radius: 5px;
+   -webkit-border-radius: 5px;
+   border-radius: 5px;
+   border: 1px solid #CC9933;
+}
+
+ul.pagination li a {
+    background: None;
+    border-radius: 5px;
+    border: 1px solid #CC9933;
+    color: #CC9933;
+    margin: 0 4px;
+}
+
+
+ul.pagination .active {
+    display:block;
+    float:left;
+    padding:4px 6px;
+}
+
+ul.pagination li a:hover {background-color: #663300; color: #CC9933;}
+ul.pagination li a:hover:not(.active) {background-color: #663300; color: #CC9933;}

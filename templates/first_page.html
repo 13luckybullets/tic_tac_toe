@@ -2,7 +2,7 @@
 {% block content %}
     <center><h1>Welcome !</h1>
     <form action="" method="GET">
-        <input type="text" size="40" placeholder="вкажіть розмір поля(для комфортної гри від 5 до 20 бажано :))" name="num" value="{{ request.args.get('num', '') }}">
+        <input type="text" size="40" placeholder="вкажіть розмір поля(для комфортної гри від 5 до 20 бажано:))" name="num" value="{{ request.args.get('num', '') }}">
             <span>
                 <button type="submit">GO!)</button>
                 <button type="button" onclick="window.location.href='{{ url_for('history') }}';">Історія</button>

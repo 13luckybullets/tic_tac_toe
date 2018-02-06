@@ -1,8 +1,13 @@
+# Creating a logical base for our app
+
+
+# Function that draw game field
 def get_field(num):
     field_output = [['.' for i in range(num)] for j in range(num)]
     return field_output
 
 
+# Function that update game field after every move
 def update_field(field, move, line, point):
     if move % 2 == 0:
         field[line][point] = 'x'
@@ -11,6 +16,7 @@ def update_field(field, move, line, point):
     return field
 
 
+# Check winner after player move
 def check_winner(field):
 
     def check_line(point, line):
@@ -41,6 +47,7 @@ def check_winner(field):
         if check_line('x', j) or check_line('o', j):
             return True
 
+    # check winner in cascade line
     if check_cascade(field, "x") or check_cascade(field[::-1], "x") \
             or check_cascade(field, "o") or check_cascade(field[::-1], "o"):
         return True

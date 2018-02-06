@@ -3,7 +3,7 @@
     <center><h1>Ігри:</h1>
          <p><button type="button" onclick="window.location.href='{{ url_for('refresh') }}';">На головну</button></p>
         {% for game in pages.items %}
-            <p>{{loop.index}}: {{ game.date }}, Розміри поля:{{game.field_size}}Х{{game.field_size}}
+            <p>{{loop.index}} (Номер гри:{{game.id}}) {{ game.date }}, Розміри поля:{{game.field_size}}Х{{game.field_size}}
             <button type="button" onclick="window.location.href='{{ url_for('draw_map', pk=game.id) }}';">Відтворити</button></p>
         {% endfor %}
 
