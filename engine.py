@@ -26,6 +26,8 @@ def check_winner(field):
                 counter += 1
                 if counter == 5:
                     return True
+            else:
+                counter = 0
 
     def check_cascade(field, point):
         try:

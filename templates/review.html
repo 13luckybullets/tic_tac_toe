@@ -5,8 +5,8 @@
             {% if messages %}
                 <ul class=flashes>
                     {% for message in messages %}
-                      <h4>{{ message }} Хід: {{ data.chord }}</h4>
-                        <p><button type="button" onclick="window.location.href='{{ url_for('refresh') }}';">На головну</button>
+                      <h4>{{ message }}</h4>
+                        <p><button type="button" onclick="window.location.href='{{ url_for('refresh', pk=game.id) }}';">На головну</button>
                         <button type="button" onclick="window.location.href='{{ url_for('history') }}';">Історія</button></p>
                     {% endfor %}
                 </ul>

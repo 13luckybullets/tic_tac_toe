@@ -1,12 +1,7 @@
 from app import app
-from flask import render_template, request, redirect, url_for, flash, g
+from flask import render_template, request, redirect, url_for, flash, session
 from engine import *
 from models import *
-
-# Creating global variables for comfortable using
-DATA = {"x": "x", "o": "o", "moves": 0}
-FIELD = []
-NUM = 0
 
 
 # creating main page,
@@ -18,20 +13,20 @@ def page():
 
         # take argument 'num', ones that input user
         # and creating game field
-
-        global NUM
-        NUM = int(num)
-        global FIELD
-        FIELD = get_field(NUM)
-        field = FIELD
+        field = get_field(int(num))
 
         # add new game to database
-        new_game = Game(field_size=NUM)
+        new_game = Game(field_size=int(num))
         db.session.add(new_game)
         db.session.commit()
 
+        # add game data to session
+        session[f'game_{new_game.id}_field'] = field
+        session[f'game_{new_game.id}_data'] = {"x": "x", "o": "o", "moves": 0}
+
         # let's go! :)
-        return render_template("game.html", field=field, data=DATA, pk=new_game.id, num=num)
+        return render_template("game.html", field=field, data=session.get(f'game_{new_game.id}_data'),
+                               pk=new_game.id, num=num)
     return render_template('first_page.html')
 
 
@@ -39,19 +34,15 @@ def page():
 @app.route("/game<pk>/<move>/<line>:<point>")
 def game(pk, move, line, point):
 
-    # create game field if not created, or used already created field
-    if move == 0:
-        field = getattr(g, 'field', None)
-    else:
-        field = FIELD
-
-    data = DATA
+    # get work data from session
+    data = session[f'game_{pk}_data']
+    field = session[f'game_{pk}_field']
 
     # check player by argument 'move'
     if data['moves'] % 2 == 0:
-        data['player'] = "пан 'X' "
+        data['player'] = "пан 'X'"
     else:
-        data['player'] = "пан '0' "
+        data['player'] = "пан '0'"
 
     # updating field by player move
     field = update_field(field, int(move), int(line), int(point))
@@ -63,15 +54,17 @@ def game(pk, move, line, point):
     # check winner on that point
     # if winner - congratulations and clear our work data
     if check_winner(field):
-        set_null()
-        flash(f"Переможець {data['player']}, на {data['moves']} ході")
+        db.session.commit()
+        flash(f"Переможець {data['player']}, на {data['moves']+1} ході")
 
-    # if not winner update argument 'move', to change player
-    data['moves'] = int(move) + 1
+    # if not winner update session arguments, to change player and field
+    session[f'game_{pk}_data']['moves'] += 1
+    session[f'game_{pk}_field'] = field
 
     # add changes to table GameLog in database
     db.session.commit()
-    return render_template('game.html', field=field, data=DATA, pk=pk)
+
+    return render_template('game.html', field=field, data=session.get(f'game_{pk}_data'), pk=pk)
 
 
 # creating a page with games that was played
@@ -97,66 +90,62 @@ def history():
 # drawing map to review game
 @app.route("/review/<pk>/")
 def draw_map(pk):
+
+    # take game data from database
     view_game = Game.query.filter(Game.id == pk).first()
-    global FIELD
-    FIELD = get_field(view_game.field_size)
-    return render_template("review.html", game=view_game, data=DATA, field=FIELD)
+    field = get_field(view_game.field_size)
+
+    # add data to session
+    session[f'{pk}_field'] = field
+    session[f'{pk}_data'] = {"x": "x", "o": "o", "moves": 0}
+
+    return render_template("review.html", game=view_game, data=session.get(f'{pk}_data'), field=field)
 
 
 # review tha game
 @app.route("/review/<pk>/next_move")
 def review(pk):
 
+    # get wor data from session
+    data = session[f'{pk}_data']
+    field = session[f'{pk}_field']
+
     # most of steps looks like steps in the game view
     # taking log record from database with using game id
-    data = DATA
     log = GameLog.query.filter(GameLog.parent == pk)
     view_game = Game.query.filter(Game.id == pk).first()
     log_list = [{'move': i.move, "point": i.point, "line": i.line} for i in log]
 
     # check player
     if data['moves'] % 2 == 0:
-        data['player'] = "пан 'X' "
+        data['player'] = "пан 'X'"
     else:
-        data['player'] = "пан '0' "
+        data['player'] = "пан '0'"
 
     # updating game field till victory :)
     try:
         data['chord'] = f"{log_list[data['moves']]['line']+1}:{log_list[data['moves']]['point']+1}"
-        global FIELD
-        FIELD = update_field(FIELD, log_list[data['moves']]['move'], log_list[data['moves']]['line'],
-                             log_list[data['moves']]['point'])
 
-        if check_winner(FIELD):
-            flash(f"Переможець {data['player']}, на {data['moves']} ході")
-            set_null()
+        field = update_field(field, log_list[data['moves']]['move'], log_list[data['moves']]['line'],
+                             log_list[data['moves']]['point'])
+        if check_winner(field):
+            flash(f"Переможець {data['player']}, на {data['moves']+1} ході")
 
     # in case that game was not played, or finished incorrect - catch exception
     except IndexError:
         flash(f"Гра була не закінчена")
-        set_null()
-    data['moves'] += 1
 
-    return render_template("review.html", log=log, game=view_game, data=data, field=FIELD)
+    # update session and move on
+    session[f'{pk}_data']['moves'] += 1
+    session[f'{pk}_field'] = field
+
+    return render_template("review.html", log=log, game=view_game, data=data, field=field)
+
 
 # cleaned our work data and go to first page
 @app.route("/refresh/")
 def refresh():
-    set_null()
-    return redirect(url_for('page', field=FIELD))
-
-
-# function that provides work of flask.g variables
-@app.before_request
-def before_request():
-    g.field = get_field(NUM)
-
-
-# function that cleaning up our work data
-def set_null():
-    global NUM, DATA
-    NUM = 0
-    DATA = {"empty": '.', 'x': 'x', 'o': 'o', "moves": 0}
+    return redirect(url_for('page'))
 
 
 
